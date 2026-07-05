@@ -1,65 +1,230 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
+
+import TelemetryChart from "../components/TelemetryChart";
 
 export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+
+  const [data, setData] = useState<any>(null);
+
+  useEffect(() => {
+    fetch("/data/f1_dashboard_data.json")
+      .then((res) => res.json())
+      .then((json) => setData(json));
+  }, []);
+
+  if (!data) {
+    return (
+      <main className="min-h-screen bg-black text-white flex items-center justify-center">
+        <h1 className="text-3xl">Loading AI Telemetry...</h1>
       </main>
-    </div>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-[#09090B] text-white">
+
+      {/* ===================================================== */}
+      {/* HEADER */}
+      {/* ===================================================== */}
+
+      <header className="border-b border-zinc-800">
+
+        <div className="max-w-7xl mx-auto px-8 py-6 flex items-center justify-between">
+
+          <div>
+
+            <h1 className="text-4xl font-bold">
+              F1 Telemetry Intelligence
+            </h1>
+
+            <p className="text-zinc-400 mt-1">
+              Research-grade AI Analytics Platform
+            </p>
+
+          </div>
+
+          <div className="flex gap-4">
+
+            <button className="bg-red-600 hover:bg-red-700 transition px-6 py-3 rounded-xl font-semibold">
+              Live Telemetry
+            </button>
+
+          </div>
+
+        </div>
+
+      </header>
+
+      {/* ===================================================== */}
+      {/* SELECTORS */}
+      {/* ===================================================== */}
+
+      <section className="max-w-7xl mx-auto px-8 mt-10">
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+          <div className="bg-zinc-900 rounded-3xl p-6">
+
+            <h3 className="text-zinc-400 mb-3">
+              Grand Prix
+            </h3>
+
+            <select className="w-full bg-black rounded-xl p-4">
+
+              <option>Monaco GP</option>
+
+            </select>
+
+          </div>
+
+          <div className="bg-zinc-900 rounded-3xl p-6">
+
+            <h3 className="text-zinc-400 mb-3">
+              Driver
+            </h3>
+
+            <select className="w-full bg-black rounded-xl p-4">
+
+              <option>Max Verstappen</option>
+
+            </select>
+
+          </div>
+
+          <div className="bg-zinc-900 rounded-3xl p-6">
+
+            <h3 className="text-zinc-400 mb-3">
+              Compare With
+            </h3>
+
+            <select className="w-full bg-black rounded-xl p-4">
+
+              <option>Lewis Hamilton</option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      {/* ===================================================== */}
+      {/* METRICS */}
+      {/* ===================================================== */}
+
+      <section className="max-w-7xl mx-auto px-8 mt-10">
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+
+          <MetricCard
+            title="Average Speed"
+            value={`${data.avg_speed.toFixed(1)} km/h`}
+          />
+
+          <MetricCard
+            title="Top Speed"
+            value={`${data.top_speed.toFixed(1)} km/h`}
+          />
+
+          <MetricCard
+            title="Average RPM"
+            value={data.avg_rpm.toFixed(0)}
+          />
+
+          <MetricCard
+            title="Throttle"
+            value={`${data.avg_throttle.toFixed(1)} %`}
+          />
+
+          <MetricCard
+            title="Tire Wear"
+            value={`${data.avg_tire_deg.toFixed(1)} %`}
+          />
+
+          <MetricCard
+            title="Engine Stress"
+            value={`${data.avg_engine_stress.toFixed(1)} %`}
+          />
+
+        </div>
+
+      </section>
+
+      {/* ===================================================== */}
+      {/* EMPTY CHART AREA */}
+      {/* ===================================================== */}
+
+      <section className="max-w-7xl mx-auto px-8 mt-10 mb-16">
+
+      <TelemetryChart
+        title="Speed Telemetry"
+        distance={data.distance}
+        values={data.speed_trace}
+        color="#ef4444"
+      />
+
+      <TelemetryChart
+        title="Throttle Telemetry"
+        distance={data.distance}
+        values={data.throttle_trace}
+        color="#00F5D4"
+      />
+
+      <TelemetryChart
+        title="Brake Telemetry"
+        distance={data.distance}
+        values={data.brake_trace}
+        color="#FFD60A"
+      />
+
+      <TelemetryChart
+        title="AI Tire Degradation"
+        distance={data.distance}
+        values={data.tire_trace}
+        color="#FF00FF"
+      />
+
+      </section>
+
+    </main>
   );
+}
+
+function MetricCard({
+
+  title,
+
+  value,
+
+}: {
+
+  title: string;
+
+  value: string;
+
+}) {
+
+  return (
+
+    <div className="bg-zinc-900 rounded-3xl p-6">
+
+      <p className="text-zinc-400">
+
+        {title}
+
+      </p>
+
+      <h2 className="text-4xl font-bold mt-3">
+
+        {value}
+
+      </h2>
+
+    </div>
+
+  );
+
 }
