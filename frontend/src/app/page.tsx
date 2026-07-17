@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 
+import AIInsights from "../components/AIInsights";
 import MetricCard from "../components/MetricCard";
 import TelemetryChart from "../components/TelemetryChart";
 
 export default function Home() {
   const [data, setData] = useState<any>(null);
+  const [activeChart, setActiveChart] = useState("speed");
 
   useEffect(() => {
     fetch("/data/f1_dashboard_data.json")
@@ -79,7 +81,7 @@ export default function Home() {
       </section>
 
       {/* ===================================================== */}
-      {/* METRICS */}
+      {/* METRIC CARDS */}
       {/* ===================================================== */}
 
       <section className="max-w-7xl mx-auto px-8 mt-10">
@@ -129,37 +131,80 @@ export default function Home() {
       </section>
 
       {/* ===================================================== */}
-      {/* TELEMETRY CHARTS */}
+      {/* AI INSIGHTS */}
       {/* ===================================================== */}
 
-      <section className="max-w-7xl mx-auto px-8 mt-10 mb-16">
-        <TelemetryChart
-          title="Speed Telemetry"
-          distance={data.distance}
-          values={data.speed_trace}
-          color="#ef4444"
-        />
+      <section className="max-w-7xl mx-auto px-8 mt-10">
+        <AIInsights insights={data.insights} />
+      </section>
 
-        <TelemetryChart
-          title="Throttle Telemetry"
-          distance={data.distance}
-          values={data.throttle_trace}
-          color="#00F5D4"
-        />
+      {/* ===================================================== */}
+      {/* TELEMETRY TABS */}
+      {/* ===================================================== */}
 
-        <TelemetryChart
-          title="Brake Telemetry"
-          distance={data.distance}
-          values={data.brake_trace}
-          color="#FFD60A"
-        />
+      <section className="max-w-7xl mx-auto px-8 mt-10">
+        <div className="flex flex-wrap gap-3 mb-6">
+          {[
+            { id: "speed", label: "Speed" },
+            { id: "throttle", label: "Throttle" },
+            { id: "brake", label: "Brake" },
+            { id: "tyre", label: "Tyre" },
+          ].map((chart) => (
+            <button
+              key={chart.id}
+              onClick={() => setActiveChart(chart.id)}
+              className={`px-5 py-2 rounded-xl transition font-medium ${
+                activeChart === chart.id
+                  ? "bg-red-600 text-white"
+                  : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+              }`}
+            >
+              {chart.label}
+            </button>
+          ))}
+        </div>
+      </section>
 
-        <TelemetryChart
-          title="AI Tire Degradation"
-          distance={data.distance}
-          values={data.tire_trace}
-          color="#FF00FF"
-        />
+      {/* ===================================================== */}
+      {/* SELECTED TELEMETRY CHART */}
+      {/* ===================================================== */}
+
+      <section className="max-w-7xl mx-auto px-8 mt-4 mb-16">
+        {activeChart === "speed" && (
+          <TelemetryChart
+            title="Speed Telemetry"
+            distance={data.distance}
+            values={data.speed_trace}
+            color="#ef4444"
+          />
+        )}
+
+        {activeChart === "throttle" && (
+          <TelemetryChart
+            title="Throttle Telemetry"
+            distance={data.distance}
+            values={data.throttle_trace}
+            color="#00F5D4"
+          />
+        )}
+
+        {activeChart === "brake" && (
+          <TelemetryChart
+            title="Brake Telemetry"
+            distance={data.distance}
+            values={data.brake_trace}
+            color="#FFD60A"
+          />
+        )}
+
+        {activeChart === "tyre" && (
+          <TelemetryChart
+            title="AI Tire Degradation"
+            distance={data.distance}
+            values={data.tire_trace}
+            color="#FF00FF"
+          />
+        )}
       </section>
     </main>
   );
