@@ -11,9 +11,24 @@ export default function Home() {
   const [activeChart, setActiveChart] = useState("speed");
 
   useEffect(() => {
-    fetch("/data/f1_dashboard_data.json")
-      .then((res) => res.json())
-      .then((json) => setData(json));
+    async function loadTelemetry() {
+      try {
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/telemetry"
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch telemetry");
+        }
+
+        const json = await response.json();
+        setData(json);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    loadTelemetry();
   }, []);
 
   if (!data) {
