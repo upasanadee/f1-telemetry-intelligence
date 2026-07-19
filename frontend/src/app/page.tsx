@@ -1,10 +1,14 @@
 "use client";
+import { getTelemetry } from "@/services/api";
 
 import { useEffect, useState } from "react";
 
 import AIInsights from "../components/AIInsights";
 import MetricCard from "../components/MetricCard";
 import TelemetryChart from "../components/TelemetryChart";
+
+const [driver1, setDriver1] = useState("VER");
+const [driver2, setDriver2] = useState("HAM");
 
 export default function Home() {
   const [data, setData] = useState<any>(null);
@@ -13,15 +17,7 @@ export default function Home() {
   useEffect(() => {
     async function loadTelemetry() {
       try {
-        const response = await fetch(
-          "http://127.0.0.1:8000/api/telemetry"
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch telemetry");
-        }
-
-        const json = await response.json();
+        const json = await getTelemetry();
         setData(json);
       } catch (error) {
         console.error(error);
@@ -73,7 +69,8 @@ export default function Home() {
             <h3 className="text-zinc-400 mb-3">Grand Prix</h3>
 
             <select className="w-full bg-black rounded-xl p-4">
-              <option>Monaco GP</option>
+                <option>{data.driver1}</option>
+                <option>{data.driver2}</option>
             </select>
           </div>
 
