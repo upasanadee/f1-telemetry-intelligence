@@ -1,103 +1,62 @@
+from typing import Any
+
+from sqlalchemy.dialects.postgresql import insert
+
 from database.connection import SessionLocal
-from database.models import Meeting, Session, Driver
 
 
-def load_meetings(meetings):
-
-    db = SessionLocal()
-
-    try:
-
-        for meeting in meetings:
-
-            # Skip if already exists
-            if db.get(Meeting, meeting["meeting_key"]):
-                continue
-
-            db.add(
-                Meeting(
-                    meeting_key=meeting["meeting_key"],
-                    meeting_name=meeting["meeting_name"],
-                    country_name=meeting["country_name"],
-                    location=meeting["location"],
-                    circuit_key=meeting["circuit_key"],
-                    year=meeting["year"],
-                )
-            )
-
-        db.commit()
-
-    except Exception:
-        db.rollback()
-        raise
-
-    finally:
-        db.close()
+BATCH_SIZE = 5000
 
 
-def load_sessions(sessions):
+def bulk_load(
+    model,
+    records: list[dict[str, Any]],
+):
+    """
+    Bulk inserts records into PostgreSQL using batched
+    INSERT ... ON CONFLICT DO NOTHING.
+
+    Extra API fields are automatically ignored.
+    """
+
+    if not records:
+        return
 
     db = SessionLocal()
 
     try:
 
-        for session in sessions:
+        model_columns = {
+            column.name
+            for column in model.__table__.columns
+        }
 
-            # Skip if already exists
-            if db.get(Session, session["session_key"]):
-                continue
+        pk_columns = [
+            column.name
+            for column in model.__table__.primary_key.columns
+        ]
 
-            db.add(
-                Session(
-                    session_key=session["session_key"],
-                    meeting_key=session["meeting_key"],
-                    session_name=session["session_name"],
-                    session_type=session["session_type"],
-                    date_start=session["date_start"],
-                    date_end=session["date_end"],
-                )
+        # Process records in batches
+        for start in range(0, len(records), BATCH_SIZE):
+
+            batch = records[start:start + BATCH_SIZE]
+
+            cleaned_batch = [
+                {
+                    k: v
+                    for k, v in row.items()
+                    if k in model_columns
+                }
+                for row in batch
+            ]
+
+            stmt = insert(model).values(cleaned_batch)
+
+            stmt = stmt.on_conflict_do_nothing(
+                index_elements=pk_columns
             )
 
-        db.commit()
-
-    except Exception:
-        db.rollback()
-        raise
-
-    finally:
-        db.close()
-
-
-def load_drivers(drivers):
-
-    db = SessionLocal()
-
-    try:
-
-        for driver in drivers:
-
-            # Skip if already exists
-            if db.get(
-                Driver,
-                (
-                    driver["session_key"],
-                    driver["driver_number"],
-                ),
-            ):
-                continue
-
-            db.add(
-                Driver(
-                    session_key=driver["session_key"],
-                    driver_number=driver["driver_number"],
-                    meeting_key=driver["meeting_key"],
-                    full_name=driver["full_name"],
-                    name_acronym=driver["name_acronym"],
-                    team_name=driver["team_name"],
-                    team_colour=driver["team_colour"],
-                    country_code=driver["country_code"],
-                )
-            )
+            db.execute(stmt)
 
         db.commit()
 

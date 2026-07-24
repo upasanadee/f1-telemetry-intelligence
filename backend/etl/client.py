@@ -29,6 +29,9 @@ class OpenF1Client:
             timeout=30,
         )
 
+        if response.status_code == 404:
+            return []
+
         response.raise_for_status()
 
         return response.json()
@@ -77,3 +80,43 @@ class OpenF1Client:
                 "driver_number": driver_number,
             },
         )
+    def get_positions(self, session_key):
+
+        return self.get(
+            "position",
+            {
+                "session_key": session_key,
+            },
+        )
+
+
+    def get_weather(self, session_key):
+
+        return self.get(
+            "weather",
+            {
+                "session_key": session_key,
+            },
+        )
+
+
+    def get_race_control(self, session_key):
+
+        return self.get(
+            "race_control",
+            {
+                "session_key": session_key,
+            },
+        )
+
+
+    def get_team_radio(self, session_key, driver_number):
+
+        return self.get(
+            "team_radio",
+            {
+                "session_key": session_key,
+                "driver_number": driver_number,
+            },
+        )
+
