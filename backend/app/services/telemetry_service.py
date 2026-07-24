@@ -1,44 +1,36 @@
-import pandas as pd
+import json
+from pathlib import Path
 
-from app.services.fastf1_service import load_session
+DATA_FILE = (
+    Path(__file__).resolve().parent.parent.parent
+    / "data"
+    / "f1_dashboard_data.json"
+)
 
 
 def get_driver_telemetry(
-    year: int,
-    grand_prix: str,
-    session_type: str,
-    driver: str,
+    year: int = None,
+    grand_prix: str = None,
+    session_type: str = None,
+    driver: str = None,
 ):
     """
-    Returns telemetry for the driver's fastest lap.
+    Returns telemetry from the offline JSON dataset.
     """
 
-    session = load_session(
-        year,
-        grand_prix,
-        session_type,
-    )
-
-    laps = session.laps.pick_drivers(driver)
-
-    if laps.empty:
-        raise ValueError(f"No laps found for driver '{driver}'")
-
-    fastest = laps.pick_fastest()
-
-    telemetry = (
-        fastest
-        .get_car_data()
-        .add_distance()
-    )
-
-    telemetry = telemetry.fillna(0)
+    with open(DATA_FILE, "r") as f:
+        data = json.load(f)
 
     return {
-        "distance": telemetry["Distance"].tolist(),
-        "speed": telemetry["Speed"].tolist(),
-        "rpm": telemetry["RPM"].tolist(),
-        "throttle": telemetry["Throttle"].tolist(),
-        "brake": telemetry["Brake"].astype(int).tolist(),
-        "gear": telemetry["nGear"].tolist(),
+        "distance": data["distance"],
+        "speed": data["speed_trace"],
+        "throttle": data["throttle_trace"],
+        "brake": data["brake_trace"],
+        "tire": data["tire_trace"],
+        "engine": data["engine_trace"],
+        "driver1": data["driver1"],
+        "driver2": data["driver2"],
+        "avg_speed": data["avg_speed"],
+        "top_speed": data["top_speed"],
+        "insights": data["insights"],
     }

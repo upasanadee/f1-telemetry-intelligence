@@ -1,33 +1,63 @@
 from fastapi import APIRouter, Query
-import json
-from pathlib import Path
+from app.services.session_service import (
+    get_seasons,
+    get_events,
+    get_sessions,
+    get_drivers,
+)
 
-router = APIRouter(prefix="/api", tags=["Telemetry"])
+from app.services.telemetry_service import get_driver_telemetry
+
+
+router = APIRouter(
+    prefix="/api",
+    tags=["Telemetry"],
+)
 
 
 @router.get("/telemetry")
 def get_telemetry(
-    gp: str = Query("Monaco"),
-    session: str = Query("Q"),
-    driver1: str = Query("VER"),
-    driver2: str = Query("HAM"),
+    year: int = Query(2024),
+    grand_prix: str = Query("Monaco"),
+    session_type: str = Query("Q"),
+    driver: str = Query("VER"),
 ):
     """
-    Temporary endpoint.
+    Returns telemetry for the selected driver.
 
-    Later:
-    - Load FastF1 session
-    - Process telemetry
-    - Run AI models
+    Currently uses offline JSON.
+    Later this service can load data from
+    FastF1/OpenF1 without changing this API.
     """
 
-    json_path = (
-        Path(__file__).parent.parent
-        / "data"
-        / "f1_dashboard_data.json"
+    return get_driver_telemetry(
+        year=year,
+        grand_prix=grand_prix,
+        session_type=session_type,
+        driver=driver,
     )
+@router.get("/seasons")
+def seasons():
+    return get_seasons()
+@router.get("/events")
+def events(season: str):
+    return get_events(season)
 
-    with open(json_path) as f:
-        data = json.load(f)
+@router.get("/sessions")
+def sessions(
+    season: str,
+    event: str,
+):
+    return get_sessions(season, event)
 
-    return data
+@router.get("/drivers")
+def drivers(
+    season: str,
+    event: str,
+    session: str,
+):
+    return get_drivers(
+        season,
+        event,
+        session,
+    )

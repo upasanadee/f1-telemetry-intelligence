@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.api import router
 
 # ==========================================================
 # APP
@@ -54,3 +55,8 @@ def health():
         "backend": "FastAPI",
         "version": "1.0.0",
     }
+# ==========================================================
+# API ROUTES
+# ==========================================================
+
+app.include_router(router)
