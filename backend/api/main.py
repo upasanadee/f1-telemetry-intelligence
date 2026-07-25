@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from api.routes.meetings import router as meetings_router
 from api.routes.sessions import router as sessions_router
@@ -17,6 +18,18 @@ app = FastAPI(
     version="1.0.0",
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://laughing-journey-5gpr9jxqqx5crq7-3000.app.github.dev",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(meetings_router)
 app.include_router(sessions_router)
 app.include_router(drivers_router)
@@ -33,5 +46,5 @@ app.include_router(analytics_router)
 def root():
     return {
         "status": "running",
-        "message": "Welcome to the F1 Telemetry Intelligence API"
+        "message": "Welcome to the F1 Telemetry Intelligence API",
     }

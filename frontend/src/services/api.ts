@@ -1,11 +1,52 @@
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
-export async function getTelemetry() {
-  const res = await fetch(`${API}/api/telemetry`);
+console.log("API URL:", API_BASE_URL);
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch telemetry");
+export async function fetchPerformanceScores(sessionKey: number) {
+  const response = await fetch(
+    `${API_BASE_URL}/analytics/performance-score/${sessionKey}`
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch performance scores");
   }
 
-  return res.json();
+  return response.json();
+}
+
+export async function fetchRaceSummary(sessionKey: number) {
+  const response = await fetch(
+    `${API_BASE_URL}/analytics/race-summary/${sessionKey}`
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch race summary");
+  }
+
+  return response.json();
+}
+
+export async function fetchTopSpeeds(sessionKey: number) {
+  const response = await fetch(
+    `${API_BASE_URL}/analytics/top-speeds/${sessionKey}`
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch top speeds");
+  }
+
+  return response.json();
+}
+
+export async function fetchFastestLaps(sessionKey: number) {
+  const response = await fetch(
+    `${API_BASE_URL}/analytics/fastest-laps/${sessionKey}`
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch fastest laps");
+  }
+
+  return response.json();
 }
