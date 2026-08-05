@@ -50,3 +50,23 @@ export async function fetchFastestLaps(sessionKey: number) {
 
   return response.json();
 }
+
+export async function fetchMeetings() {
+  const response = await fetch(`${API_BASE_URL}/meetings`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch meetings");
+  }
+
+  return response.json();
+}
+
+export async function fetchSessions() {
+  const response = await fetch(`${API_BASE_URL}/sessions`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch sessions");
+  }
+
+  return response.json();
+}
