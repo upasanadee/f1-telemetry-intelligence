@@ -9,14 +9,14 @@ import Leaderboard from "@/components/Leaderboard";
 import RaceSummaryCard from "@/components/RaceSummaryCard";
 
 import {
-  fetchPerformanceScores,
-  fetchRaceSummary,
   fetchMeetings,
   fetchSessions,
+  fetchPerformanceScores,
+  fetchRaceSummary,
 } from "@/services/api";
 
-import { PerformanceScore } from "@/types/analytics";
 import { Meeting, Session } from "@/types/f1";
+import { PerformanceScore } from "@/types/analytics";
 
 export default function Home() {
   // ===========================================
@@ -33,38 +33,25 @@ export default function Home() {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [sessions, setSessions] = useState<Session[]>([]);
 
-  // Default: Bahrain Grand Prix
-  const [selectedMeeting, setSelectedMeeting] =
-    useState<number>(1229);
+  // Default Bahrain GP
+  const [selectedMeeting, setSelectedMeeting] = useState<number>(1229);
 
-  // Default: Bahrain GP Race session
-  const [selectedSession, setSelectedSession] =
-    useState<number>(9472);
-
-  // Sessions belonging to the selected meeting
-  const meetingSessions = sessions.filter(
-    (session) => session.meeting_key === selectedMeeting
-  );
+  // Default Bahrain Race
+  const [selectedSession, setSelectedSession] = useState<number>(9472);
 
   const [loading, setLoading] = useState(true);
 
+  // ===========================================
+  // Load meetings & sessions
+  // ===========================================
+
   useEffect(() => {
-    async function loadDashboard() {
+    async function loadInitialData() {
       try {
-        const [
-          leaderboard,
-          raceSummary,
-          meetingsData,
-          sessionsData,
-        ] = await Promise.all([
-          fetchPerformanceScores(9462),
-          fetchRaceSummary(9462),
+        const [meetingsData, sessionsData] = await Promise.all([
           fetchMeetings(),
           fetchSessions(),
         ]);
-
-        setDrivers(leaderboard);
-        setSummary(raceSummary);
 
         setMeetings(meetingsData);
         setSessions(sessionsData);
@@ -75,17 +62,60 @@ export default function Home() {
       }
     }
 
-    loadDashboard();
+    loadInitialData();
   }, []);
 
-  // Temporary verification
-  console.log("Meetings:", meetings);
-  console.log("Sessions:", sessions);
-  console.log("Selected Meeting:", selectedMeeting);
-  console.log("Meeting Sessions:", meetingSessions);
-  console.log("Selected Session:", selectedSession);
+  // ===========================================
+  // Auto-select Race session whenever GP changes
+  // ===========================================
 
-  if (loading) {
+  useEffect(() => {
+    if (sessions.length === 0) return;
+
+    const meetingSessions = sessions.filter(
+      (session) => session.meeting_key === selectedMeeting
+    );
+
+    const raceSession =
+      meetingSessions.find(
+        (session) => session.session_type === "Race"
+      ) ?? meetingSessions[0];
+
+    if (raceSession) {
+      setSelectedSession(raceSession.session_key);
+    }
+  }, [selectedMeeting, sessions]);
+
+  // ===========================================
+  // Load analytics whenever session changes
+  // ===========================================
+
+  useEffect(() => {
+    if (!selectedSession) return;
+
+    async function loadAnalytics() {
+      try {
+        const [leaderboard, raceSummary] =
+          await Promise.all([
+            fetchPerformanceScores(selectedSession),
+            fetchRaceSummary(selectedSession),
+          ]);
+
+        setDrivers(leaderboard);
+        setSummary(raceSummary);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    loadAnalytics();
+  }, [selectedSession]);
+
+  // ===========================================
+  // Loading Screen
+  // ===========================================
+
+  if (loading || !summary) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-zinc-950 text-white">
         <h1 className="text-3xl font-bold">
@@ -95,28 +125,25 @@ export default function Home() {
     );
   }
 
+  // ===========================================
+  // UI
+  // ===========================================
+
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-8 py-10">
-
-        {/* ============================================ */}
-        {/* RACE SELECTOR */}
-        {/* ============================================ */}
-
         <RaceSelector
           meetings={meetings}
+          sessions={sessions}
           selectedMeeting={selectedMeeting}
+          selectedSession={selectedSession}
           onMeetingChange={setSelectedMeeting}
+          onSessionChange={setSelectedSession}
         />
 
-        {/* ============================================ */}
-        {/* KPI CARDS */}
-        {/* ============================================ */}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-8">
           <StatCard
             title="Fastest Lap"
             value={`${summary.fastest_lap}s`}
@@ -140,23 +167,13 @@ export default function Home() {
             value={summary.safety_car_events}
             subtitle="Race Control"
           />
-
         </div>
-
-        {/* ============================================ */}
-        {/* LEADERBOARD */}
-        {/* ============================================ */}
 
         <div className="mt-10">
           <Leaderboard drivers={drivers} />
         </div>
 
-        {/* ============================================ */}
-        {/* RACE SUMMARY */}
-        {/* ============================================ */}
-
         <div className="mt-10">
-
           <RaceSummaryCard
             fastestLap={summary.fastest_lap}
             fastestDriver={summary.fastest_lap_driver}
@@ -165,9 +182,7 @@ export default function Home() {
             trackTemp={summary.average_track_temperature}
             yellowFlags={summary.yellow_flags}
           />
-
         </div>
-
       </div>
     </main>
   );

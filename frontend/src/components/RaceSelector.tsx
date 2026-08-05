@@ -1,66 +1,82 @@
 "use client";
 
-import { Meeting } from "@/types/f1";
+import { Meeting, Session } from "@/types/f1";
 
 interface RaceSelectorProps {
   meetings: Meeting[];
+  sessions: Session[];
+
   selectedMeeting: number;
-  onMeetingChange: (meetingKey: number) => void;
+  selectedSession: number;
+
+  onMeetingChange: (meeting: number) => void;
+  onSessionChange: (session: number) => void;
 }
 
 export default function RaceSelector({
   meetings,
+  sessions,
   selectedMeeting,
+  selectedSession,
   onMeetingChange,
+  onSessionChange,
 }: RaceSelectorProps) {
+
+  const meetingSessions = sessions.filter(
+    (session) => session.meeting_key === selectedMeeting
+  );
+
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-8">
+    <div className="flex gap-6 mb-8">
 
-      <h2 className="text-xl font-semibold text-white mb-4">
-        🏁 Race Selection
-      </h2>
+      {/* Grand Prix */}
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div>
+        <label className="block text-sm mb-2 text-zinc-400">
+          Grand Prix
+        </label>
 
-        {/* Season */}
+        <select
+          value={selectedMeeting}
+          onChange={(e) =>
+            onMeetingChange(Number(e.target.value))
+          }
+          className="bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2"
+        >
+          {meetings.map((meeting) => (
+            <option
+              key={meeting.meeting_key}
+              value={meeting.meeting_key}
+            >
+              {meeting.meeting_name}
+            </option>
+          ))}
+        </select>
+      </div>
 
-        <div>
-          <label className="block text-zinc-400 mb-2">
-            Season
-          </label>
+      {/* Session */}
 
-          <input
-            value="2024"
-            disabled
-            className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3"
-          />
-        </div>
+      <div>
+        <label className="block text-sm mb-2 text-zinc-400">
+          Session
+        </label>
 
-        {/* Grand Prix */}
-
-        <div>
-          <label className="block text-zinc-400 mb-2">
-            Grand Prix
-          </label>
-
-          <select
-            value={selectedMeeting}
-            onChange={(e) =>
-              onMeetingChange(Number(e.target.value))
-            }
-            className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3"
-          >
-            {meetings.map((meeting) => (
-              <option
-                key={meeting.meeting_key}
-                value={meeting.meeting_key}
-              >
-                {meeting.meeting_name}
-              </option>
-            ))}
-          </select>
-        </div>
-
+        <select
+          value={selectedSession}
+          onChange={(e) =>
+            onSessionChange(Number(e.target.value))
+          }
+          className="bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2"
+        >
+          {meetingSessions.map((session) => (
+            <option
+              key={session.session_key}
+              value={session.session_key}
+            >
+              {session.session_name}
+            </option>
+          ))}
+        </select>
       </div>
 
     </div>

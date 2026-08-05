@@ -3,9 +3,16 @@ const API_BASE_URL =
 
 console.log("API URL:", API_BASE_URL);
 
+// ===========================================
+// Performance Score
+// ===========================================
+
 export async function fetchPerformanceScores(sessionKey: number) {
   const response = await fetch(
-    `${API_BASE_URL}/analytics/performance-score/${sessionKey}`
+    `${API_BASE_URL}/analytics/performance-score/${sessionKey}`,
+    {
+      cache: "no-store",
+    }
   );
 
   if (!response.ok) {
@@ -15,9 +22,16 @@ export async function fetchPerformanceScores(sessionKey: number) {
   return response.json();
 }
 
+// ===========================================
+// Race Summary
+// ===========================================
+
 export async function fetchRaceSummary(sessionKey: number) {
   const response = await fetch(
-    `${API_BASE_URL}/analytics/race-summary/${sessionKey}`
+    `${API_BASE_URL}/analytics/race-summary/${sessionKey}`,
+    {
+      cache: "no-store",
+    }
   );
 
   if (!response.ok) {
@@ -27,9 +41,16 @@ export async function fetchRaceSummary(sessionKey: number) {
   return response.json();
 }
 
+// ===========================================
+// Top Speeds
+// ===========================================
+
 export async function fetchTopSpeeds(sessionKey: number) {
   const response = await fetch(
-    `${API_BASE_URL}/analytics/top-speeds/${sessionKey}`
+    `${API_BASE_URL}/analytics/top-speeds/${sessionKey}`,
+    {
+      cache: "no-store",
+    }
   );
 
   if (!response.ok) {
@@ -39,9 +60,16 @@ export async function fetchTopSpeeds(sessionKey: number) {
   return response.json();
 }
 
+// ===========================================
+// Fastest Laps
+// ===========================================
+
 export async function fetchFastestLaps(sessionKey: number) {
   const response = await fetch(
-    `${API_BASE_URL}/analytics/fastest-laps/${sessionKey}`
+    `${API_BASE_URL}/analytics/fastest-laps/${sessionKey}`,
+    {
+      cache: "no-store",
+    }
   );
 
   if (!response.ok) {
@@ -51,8 +79,14 @@ export async function fetchFastestLaps(sessionKey: number) {
   return response.json();
 }
 
+// ===========================================
+// Meetings
+// ===========================================
+
 export async function fetchMeetings() {
-  const response = await fetch(`${API_BASE_URL}/meetings`);
+  const response = await fetch(`${API_BASE_URL}/meetings`, {
+    cache: "no-store",
+  });
 
   if (!response.ok) {
     throw new Error("Failed to fetch meetings");
@@ -61,8 +95,14 @@ export async function fetchMeetings() {
   return response.json();
 }
 
+// ===========================================
+// Sessions
+// ===========================================
+
 export async function fetchSessions() {
-  const response = await fetch(`${API_BASE_URL}/sessions`);
+  const response = await fetch(`${API_BASE_URL}/sessions`, {
+    cache: "no-store",
+  });
 
   if (!response.ok) {
     throw new Error("Failed to fetch sessions");
