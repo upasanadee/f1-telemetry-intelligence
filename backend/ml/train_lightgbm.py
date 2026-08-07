@@ -2,22 +2,25 @@ import joblib
 import lightgbm as lgb
 import pandas as pd
 
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import (
+    GroupShuffleSplit,
+    train_test_split,
+)
 from sklearn.metrics import (
     mean_absolute_error,
     mean_squared_error,
     r2_score,
 )
 
-# ==========================================
+# =========================================================
 # Load Dataset
-# ==========================================
+# =========================================================
 
 df = pd.read_csv("ml/dataset_clean.csv")
 
-# ==========================================
+# =========================================================
 # Features
-# ==========================================
+# =========================================================
 
 FEATURES = [
 
@@ -42,22 +45,20 @@ FEATURES = [
     "wind_speed",
 ]
 
-TARGET = "performance_index"
+TARGET = "fastest_lap"
 
 X = df[FEATURES]
 y = df[TARGET]
 
-# ==========================================
-# Train/Test Split
-# ==========================================
-
-from sklearn.model_selection import GroupShuffleSplit
+# =========================================================
+# Train / Test Split (Session-wise)
+# =========================================================
 
 groups = df["session_key"]
 
 splitter = GroupShuffleSplit(
-    test_size=0.2,
     n_splits=1,
+    test_size=0.20,
     random_state=42,
 )
 
@@ -75,13 +76,26 @@ X_test = X.iloc[test_idx]
 y_train = y.iloc[train_idx]
 y_test = y.iloc[test_idx]
 
-# ==========================================
+# =========================================================
+# Validation Split
+# =========================================================
+
+X_train_final, X_val, y_train_final, y_val = train_test_split(
+    X_train,
+    y_train,
+    test_size=0.15,
+    random_state=42,
+)
+
+# =========================================================
 # LightGBM Model
-# ==========================================
+# =========================================================
 
 model = lgb.LGBMRegressor(
 
     objective="regression",
+
+    boosting_type="gbdt",
 
     n_estimators=1500,
 
@@ -104,19 +118,40 @@ model = lgb.LGBMRegressor(
     reg_lambda=0.5,
 
     random_state=42,
+
+    verbose=-1,
 )
 
-model.fit(X_train, y_train)
+# =========================================================
+# Training
+# =========================================================
 
-# ==========================================
+model.fit(
+    X_train_final,
+    y_train_final,
+    eval_set=[(X_val, y_val)],
+    eval_metric="l1",
+    callbacks=[
+        lgb.early_stopping(100),
+        lgb.log_evaluation(100),
+    ],
+)
+
+# =========================================================
 # Predictions
-# ==========================================
+# =========================================================
 
 predictions = model.predict(X_test)
+
 results = X_test.copy()
 
 results["Actual"] = y_test.values
+
 results["Predicted"] = predictions
+
+results["Absolute Error"] = (
+    results["Actual"] - results["Predicted"]
+).abs()
 
 results.to_csv(
     "ml/predictions.csv",
@@ -125,32 +160,38 @@ results.to_csv(
 
 print("\nSaved predictions to ml/predictions.csv")
 
+# =========================================================
+# Metrics
+# =========================================================
+
+mae = mean_absolute_error(
+    y_test,
+    predictions,
+)
+
+rmse = (
+    mean_squared_error(
+        y_test,
+        predictions,
+    ) ** 0.5
+)
+
+r2 = r2_score(
+    y_test,
+    predictions,
+)
+
 print("\nModel Performance\n")
 
-print(
-    "MAE :",
-    round(mean_absolute_error(y_test, predictions), 3),
-)
+print(f"MAE : {mae:.3f}")
 
-print(
-    "RMSE:",
-    round(
-        mean_squared_error(
-            y_test,
-            predictions,
-        ) ** 0.5,
-        3,
-    ),
-)
+print(f"RMSE: {rmse:.3f}")
 
-print(
-    "R²  :",
-    round(r2_score(y_test, predictions), 3),
-)
+print(f"R²  : {r2:.3f}")
 
-# ==========================================
+# =========================================================
 # Feature Importance
-# ==========================================
+# =========================================================
 
 importance = (
     pd.DataFrame(
@@ -166,11 +207,19 @@ importance = (
 )
 
 print("\nFeature Importance\n")
+
 print(importance)
 
-# ==========================================
+importance.to_csv(
+    "ml/feature_importance.csv",
+    index=False,
+)
+
+print("\nSaved feature importance.")
+
+# =========================================================
 # Save Model
-# ==========================================
+# =========================================================
 
 joblib.dump(
     model,
