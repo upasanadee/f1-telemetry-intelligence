@@ -56,6 +56,8 @@ class RaceSummaryResponse(BaseModel):
     average_humidity: float | None = None
     average_wind_speed: float | None = None
 
+    predicted_lap_time: float | None = None
+
     yellow_flags: int
     red_flags: int
     green_flags: int

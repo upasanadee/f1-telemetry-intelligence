@@ -28,7 +28,7 @@ export default function StatCard({
         {title}
       </p>
 
-      <h2 className="text-5xl font-bold mt-4 text-white">
+      <h2 className="text-4xl font-bold mt-4 text-white">
 
         <CountUp
           end={numeric}

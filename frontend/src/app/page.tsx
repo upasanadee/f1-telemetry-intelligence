@@ -143,7 +143,7 @@ export default function Home() {
           onSessionChange={setSelectedSession}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 mt-8">
           <StatCard
             title="Fastest Lap"
             value={`${summary.fastest_lap}s`}
@@ -160,6 +160,16 @@ export default function Home() {
             title="Track Temperature"
             value={`${summary.average_track_temperature}°C`}
             subtitle="Average"
+          />
+          <StatCard
+            title="Predicted Lap Time"
+            value={
+              summary.predicted_lap_time !== null &&
+              summary.predicted_lap_time !== undefined
+                ? `${summary.predicted_lap_time.toFixed(3)} s`
+                : "--"
+            }
+            subtitle="AI Prediction"
           />
 
           <StatCard

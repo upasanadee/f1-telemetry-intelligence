@@ -1,5 +1,9 @@
 from sqlalchemy import func
 from sqlalchemy.orm import Session
+from datetime import timedelta
+import numpy as np
+
+from ml.dl.predictor import predict_lap_time
 
 from database.models.car_data import CarData
 from database.models.driver import Driver
@@ -227,7 +231,11 @@ def get_race_summary(
     fastest = (
         db.query(
             Driver.full_name.label("driver_name"),
+            Lap.driver_number,
+            Lap.lap_number,
+            Lap.date_start,
             Lap.lap_duration,
+
         )
         .join(
             Lap,
@@ -314,6 +322,60 @@ def get_race_summary(
         )
         .scalar()
     )
+    # --------------------------------------------------
+    # Telemetry for fastest lap
+    # --------------------------------------------------
+
+    prediction = None
+
+    if fastest and fastest.date_start is not None:
+
+        lap_end = (
+            fastest.date_start
+            + timedelta(seconds=float(fastest.lap_duration))
+        )
+
+        telemetry = (
+            db.query(CarData)
+            .filter(
+                CarData.session_key == session_key,
+                CarData.driver_number == fastest.driver_number,
+                CarData.date >= fastest.date_start,
+                CarData.date <= lap_end,
+            )
+            .order_by(CarData.date)
+            .all()
+        )
+
+        if len(telemetry) >= 50:
+
+            start_time = telemetry[0].date
+
+            sequence = []
+
+            for sample in telemetry:
+
+                elapsed = (
+                    sample.date - start_time
+                ).total_seconds()
+
+                sequence.append(
+                    [
+                        elapsed,
+                        sample.speed if sample.speed is not None else 0,
+                        sample.rpm if sample.rpm is not None else 0,
+                        sample.n_gear if sample.n_gear is not None else 0,
+                        sample.throttle if sample.throttle is not None else 0,
+                        sample.brake if sample.brake is not None else 0,
+                        sample.drs if sample.drs is not None else 0,
+                    ]
+                )
+            sequence = np.array(
+                sequence,
+                dtype=np.float32,
+            )
+
+            prediction = predict_lap_time(sequence)
 
     return {
         "session_key": session_key,
@@ -370,6 +432,12 @@ def get_race_summary(
         "red_flags": red_flags,
         "green_flags": green_flags,
         "safety_car_events": safety_car_events,
+
+        "predicted_lap_time": (
+            round(float(prediction), 3)
+            if prediction is not None
+            else None
+        ),
     }
 
 # --------------------------------------------------

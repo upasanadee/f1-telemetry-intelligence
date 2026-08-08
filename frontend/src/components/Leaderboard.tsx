@@ -42,8 +42,12 @@ export default function Leaderboard({
       {/* Header */}
       <div className="px-6 py-5 border-b border-zinc-800">
         <h2 className="text-2xl font-bold text-white">
-          Driver Performance Leaderboard
+          AI Performance Index
         </h2>
+
+        <p className="text-sm text-zinc-400 mt-1">
+          Computed from lap pace, speed, throttle, braking and DRS telemetry.
+        </p>
       </div>
 
       {/* Table */}
@@ -53,7 +57,7 @@ export default function Leaderboard({
             <th className="p-4 text-left">Rank</th>
             <th className="p-4 text-left">Driver</th>
             <th className="p-4 text-left">Team</th>
-            <th className="p-4 text-right">Score</th>
+            <th className="p-4 text-right">Performance Index</th>
           </tr>
         </thead>
 
