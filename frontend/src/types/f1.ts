@@ -14,3 +14,13 @@ export interface Session {
   date_start: string;
   date_end: string;
 }
+
+export interface Driver {
+  session_key: number;
+  driver_number: number;
+  full_name: string;
+  name_acronym: string;
+  team_name: string;
+  team_colour: string;
+  country_code: string;
+}

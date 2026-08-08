@@ -110,3 +110,22 @@ export async function fetchSessions() {
 
   return response.json();
 }
+
+// ===========================================
+// Drivers
+// ===========================================
+
+export async function fetchDrivers(sessionKey: number) {
+  const response = await fetch(
+    `${API_BASE_URL}/drivers/session/${sessionKey}`,
+    {
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch drivers");
+  }
+
+  return response.json();
+}

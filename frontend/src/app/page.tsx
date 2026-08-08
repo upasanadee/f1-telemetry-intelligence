@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "@/context/SessionContext";
 
 import Navbar from "@/components/Navbar";
 import RaceSelector from "@/components/RaceSelector";
@@ -33,11 +34,12 @@ export default function Home() {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [sessions, setSessions] = useState<Session[]>([]);
 
-  // Default Bahrain GP
-  const [selectedMeeting, setSelectedMeeting] = useState<number>(1229);
-
-  // Default Bahrain Race
-  const [selectedSession, setSelectedSession] = useState<number>(9472);
+  const {
+    selectedMeeting,
+    setSelectedMeeting,
+    selectedSession,
+    setSelectedSession,
+  } = useSession();
 
   const [loading, setLoading] = useState(true);
 
@@ -84,7 +86,7 @@ export default function Home() {
     if (raceSession) {
       setSelectedSession(raceSession.session_key);
     }
-  }, [selectedMeeting, sessions]);
+  }, [selectedMeeting, sessions, setSelectedSession]);
 
   // ===========================================
   // Load analytics whenever session changes
@@ -95,11 +97,10 @@ export default function Home() {
 
     async function loadAnalytics() {
       try {
-        const [leaderboard, raceSummary] =
-          await Promise.all([
-            fetchPerformanceScores(selectedSession),
-            fetchRaceSummary(selectedSession),
-          ]);
+        const [leaderboard, raceSummary] = await Promise.all([
+          fetchPerformanceScores(selectedSession),
+          fetchRaceSummary(selectedSession),
+        ]);
 
         setDrivers(leaderboard);
         setSummary(raceSummary);
@@ -161,6 +162,7 @@ export default function Home() {
             value={`${summary.average_track_temperature}°C`}
             subtitle="Average"
           />
+
           <StatCard
             title="Predicted Lap Time"
             value={

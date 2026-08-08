@@ -1,7 +1,12 @@
+"use client";
+
+import Link from "next/link";
+
 export default function Navbar() {
   return (
     <nav className="w-full border-b border-zinc-800 bg-zinc-950">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-8 py-5">
+        {/* Logo / Title */}
         <div>
           <h1 className="text-3xl font-bold text-red-600">
             F1 Telemetry Intelligence
@@ -12,22 +17,35 @@ export default function Navbar() {
           </p>
         </div>
 
-        <div className="flex gap-8 text-zinc-300">
-          <button className="hover:text-red-500 transition">
+        {/* Navigation */}
+        <div className="flex gap-8 text-zinc-300 font-medium">
+          <Link
+            href="/"
+            className="hover:text-red-500 transition-colors duration-200"
+          >
             Dashboard
-          </button>
+          </Link>
 
-          <button className="hover:text-red-500 transition">
+          <Link
+            href="/drivers"
+            className="hover:text-red-500 transition-colors duration-200"
+          >
             Drivers
-          </button>
+          </Link>
 
-          <button className="hover:text-red-500 transition">
+          <Link
+            href="/compare"
+            className="hover:text-red-500 transition-colors duration-200"
+          >
             Compare
-          </button>
+          </Link>
 
-          <button className="hover:text-red-500 transition">
+          <Link
+            href="/race-summary"
+            className="hover:text-red-500 transition-colors duration-200"
+          >
             Race Summary
-          </button>
+          </Link>
         </div>
       </div>
     </nav>
