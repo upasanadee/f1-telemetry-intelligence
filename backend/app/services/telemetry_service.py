@@ -33,4 +33,5 @@ def get_driver_telemetry(
         "avg_speed": data["avg_speed"],
         "top_speed": data["top_speed"],
         "insights": data["insights"],
+        "prediction": data["prediction"],
     }
