@@ -227,3 +227,6 @@ backend/ml/dl/sequences/
 # PyTorch models
 *.pt
 *.pth
+backend/ml/dl/lap_sequences.tar.gz
+backend/ml/dl/sequences/
+backend/ml/dl/sequences_normalized/
